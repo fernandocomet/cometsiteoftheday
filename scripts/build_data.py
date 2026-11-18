@@ -55,9 +55,14 @@ def to_site(r: dict) -> dict:
 def main() -> None:
     raw = json.loads(RAW.read_text(encoding="utf-8"))
     existing = {s["id"]: s for s in json.loads(OUT.read_text(encoding="utf-8"))} if OUT.exists() else {}
+    # Webs añadidas desde el panel /admin: se reconocen por el enlace al tuit o por dominio + fecha
+    known_tweets = {s.get("tweet") for s in existing.values() if s.get("tweet")}
+    known_day = {(s.get("domain"), s.get("date")) for s in existing.values()}
     added = 0
     for r in raw:
         s = to_site(r)
+        if s["tweet"] in known_tweets or (s["domain"] and (s["domain"], s["date"]) in known_day):
+            continue
         if s["id"] not in existing:
             existing[s["id"]] = s
             added += 1

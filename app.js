@@ -297,7 +297,7 @@
       ${tagList.length ? `<div class="tags">${tagList.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
       <div class="links">
         ${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(i18n('card.visit'))}</a>` : ''}
-        <a class="alt" href="${esc(s.tweet)}" target="_blank" rel="noopener">${esc(i18n('card.tweet'))}</a>
+        ${s.tweet ? `<a class="alt" href="${esc(s.tweet)}" target="_blank" rel="noopener">${esc(i18n('card.tweet'))}</a>` : ''}
       </div>
     </article>`;
   }
@@ -313,7 +313,7 @@
       <td class="c-site"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(s.domain)}</a></td>
       <td class="c-note"><span>${esc(noteFor(s))}</span></td>
       <td class="c-tags">${tagList.length ? `<div class="tags">${tagList.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}</td>
-      <td class="c-link"><a href="${esc(s.tweet)}" target="_blank" rel="noopener" aria-label="${esc(tweetLabel)} · ${esc(s.domain)}" title="${esc(tweetLabel)}">${ARROW}</a></td>
+      <td class="c-link">${s.tweet ? `<a href="${esc(s.tweet)}" target="_blank" rel="noopener" aria-label="${esc(tweetLabel)} · ${esc(s.domain)}" title="${esc(tweetLabel)}">${ARROW}</a>` : ''}</td>
     </tr>`;
   }
 

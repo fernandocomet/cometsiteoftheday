@@ -47,6 +47,22 @@ Para verla en local: `npx serve .` o `python3 -m http.server`, y abre `http://lo
 
 ## Añadir un premio nuevo
 
+**Desde el panel (lo normal):** entra en `https://cometsiteoftheday.vercel.app/admin` con tu contraseña.
+
+1. Pega la URL de la web y pulsa **Leer web**: saca la imagen y sugiere las tecnologías.
+2. Escribe el texto del tuit, revisa la vista previa y pulsa **Publicar y abrir X**.
+3. La web se guarda en `data/sites.json` (un commit en GitHub) y se abre X con el tuit escrito. Solo te queda darle a *Postear*.
+4. Cuando el tuit esté publicado, copia su enlace y pégalo en **Pendientes** para que la tarjeta tenga «Ver tuit».
+
+El panel usa las funciones de `api/` y solo funciona en Vercel. Necesita estas variables en **Vercel → Settings → Environment Variables**:
+
+| Variable | Valor |
+|---|---|
+| `ADMIN_PASSWORD` | La contraseña del panel |
+| `GITHUB_TOKEN` | Token *fine-grained* de GitHub con acceso solo a este repo y permiso **Contents: Read and write** |
+
+### Otras formas
+
 **A mano:** añade un objeto al principio de `data/sites.json` con los campos de arriba. `image` y `tags` son opcionales: si no hay imagen, la tarjeta muestra el dominio sobre fondo negro (blanco en modo oscuro).
 
 `note` es el texto original del tuit y no se traduce. Si quieres una descripción propia en cada idioma, añade `note_es` y/o `note_en`: la web muestra la del idioma activo y, si no existe, `note`.
