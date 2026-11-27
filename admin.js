@@ -30,6 +30,71 @@
   }
 
   const msg = (el, text, kind = '') => { el.textContent = text; el.className = `msg ${kind}`; };
+  const thumbHTML = (src, domain) => src
+    ? `<img src="${esc(src)}" alt="" referrerpolicy="no-referrer">`
+    : `<span class="ph">${esc(domain)}</span>`;
+  // Si la imagen no carga, placeholder con el dominio (como en la web)
+  const fallbackOnError = (box, domain) => {
+    const im = box.querySelector('img');
+    if (im) im.addEventListener('error', () => { im.replaceWith(Object.assign(document.createElement('span'), { className: 'ph', textContent: domain })); });
+  };
+
+  /* ---------- Subir imágenes ---------- */
+  // Se reduce en el navegador (máx. 1600 px de ancho, JPEG) para que pese poco y quepa en la petición a /api.
+  async function shrink(file) {
+    if (!file || !/^image\//.test(file.type)) throw new Error('Eso no es una imagen.');
+    const src = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((ok, ko) => {
+        const i = new Image();
+        i.onload = () => ok(i);
+        i.onerror = () => ko(new Error('No puedo leer esa imagen.'));
+        i.src = src;
+      });
+      const scale = Math.min(1, 1600 / img.naturalWidth);
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const c = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff'; // las transparencias del PNG quedan en blanco, no en negro
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      return { data: c.toDataURL('image/jpeg', 0.85), w, h, name: file.name || 'captura' };
+    } finally { URL.revokeObjectURL(src); }
+  }
+
+  // Botón «Subir imagen» + arrastrar la imagen encima del bloque. Pegar (⌘V) se gestiona abajo, una vez para todo el panel.
+  const pickers = [];
+  function imagePicker({ button, input, zone, onPick, onError }) {
+    const take = async (file) => { try { onPick(await shrink(file)); } catch (e) { onError(e.message); } };
+    button.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => { if (input.files[0]) take(input.files[0]); input.value = ''; });
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragging'); });
+    zone.addEventListener('dragleave', (e) => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('dragging'); });
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragging');
+      const f = [...e.dataTransfer.files].find((x) => /^image\//.test(x.type));
+      f ? take(f) : onError('Suelta un archivo de imagen.');
+    });
+    pickers.push({ zone, take });
+  }
+  // ⌘V con una imagen en el portapapeles: va al bloque donde está el foco (o al de nuevo premio).
+  document.addEventListener('paste', (e) => {
+    if ($('#panel').hidden) return;
+    const f = [...((e.clipboardData && e.clipboardData.files) || [])].find((x) => /^image\//.test(x.type));
+    if (!f) return;
+    e.preventDefault();
+    const p = pickers.find((x) => x.zone.contains(document.activeElement)) || pickers[0];
+    p.take(f);
+  });
+  const uploadedText = (u) => `Imagen subida: ${u.name} (${u.w}×${u.h}) · `;
+  function showUploaded(el, u, onRemove) {
+    msg(el, uploadedText(u), 'ok');
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'link-btn', textContent: 'Quitar' });
+    b.addEventListener('click', onRemove);
+    el.append(b);
+  }
 
   /* ---------- Acceso ---------- */
   function showLogin(text) {
@@ -42,11 +107,12 @@
 
   async function enter() {
     try {
-      const { pending } = await api('/api/save');
+      const { pending, sites } = await api('/api/save');
       $('#login').hidden = true;
       $('#panel').hidden = false;
       $('#logout').hidden = false;
       renderPending(pending);
+      renderSites(sites || []);
       $('#url').focus();
     } catch (e) {
       if (e.status === 401) { try { localStorage.removeItem(KEY); } catch (er) {} password = ''; }
@@ -103,11 +169,11 @@
       const d = await api('/api/preview', { url });
       $('#url').value = d.url;
       lastFetched = d.url;
-      if (d.image) $('#image').value = d.image;
+      if (d.image && !upload) $('#image').value = d.image;
       d.tags.forEach((t) => { selectedTags.add(t); if (!knownTags.includes(t)) knownTags.push(t); });
       renderTagChips();
       if (!$('#note').value.trim()) $('#note').value = `${d.domain} is ${HASHTAG}`;
-      const parts = [d.title && `«${d.title}»`, d.image ? 'imagen encontrada' : 'sin imagen'];
+      const parts = [d.title && `«${d.title}»`, d.image ? 'imagen encontrada' : (upload ? '' : 'sin imagen: sube una captura')];
       if (d.duplicate) parts.push(`⚠ ya premiada el ${d.duplicate.date}`);
       msg($('#fetch-msg'), [parts.filter(Boolean).join(' · '), d.warning].filter(Boolean).join(' — '), d.duplicate || d.warning ? 'warn' : 'ok');
       update();
@@ -147,19 +213,34 @@
   function renderPreview() {
     let domain = '…';
     try { domain = new URL($('#url').value.trim()).hostname.replace(/^www\./, ''); } catch (e) {}
-    const img = $('#image').value.trim();
+    const img = upload ? upload.data : $('#image').value.trim();
     const date = $('#date').value ? new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date($('#date').value + 'T12:00:00')) : '';
     const tags = allTags();
     $('#preview').innerHTML = `<article class="card">
-      <span class="thumb">${img ? `<img src="${esc(img)}" alt="" referrerpolicy="no-referrer">` : `<span class="ph">${esc(domain)}</span>`}</span>
+      <span class="thumb">${thumbHTML(img, domain)}</span>
       <div class="meta"><time>${esc(date)}</time><span aria-hidden="true">★</span></div>
       <h2>${esc(domain)}</h2>
       <p class="note">${esc($('#note').value.trim() || 'El texto del tuit…')}</p>
       ${tags.length ? `<div class="tags">${tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
     </article>`;
-    const im = $('#preview img');
-    if (im) im.addEventListener('error', () => { im.replaceWith(Object.assign(document.createElement('span'), { className: 'ph', textContent: domain })); });
+    fallbackOnError($('#preview'), domain);
   }
+
+  let upload = null; // imagen subida para el nuevo premio
+  const clearUpload = () => { upload = null; msg($('#image-msg'), ''); };
+  imagePicker({
+    button: $('#image-pick'),
+    input: $('#image-file'),
+    zone: $('#add-form'),
+    onPick: (u) => {
+      upload = u;
+      $('#image').value = '';
+      showUploaded($('#image-msg'), u, () => { clearUpload(); update(); });
+      update();
+    },
+    onError: (t) => msg($('#image-msg'), t, 'error'),
+  });
+  $('#image').addEventListener('input', () => { if (upload && $('#image').value.trim()) clearUpload(); });
 
   ['#note', '#url', '#image', '#date', '#tag-extra'].forEach((s) => $(s).addEventListener('input', update));
   $('#add-hashtag').addEventListener('click', () => {
@@ -184,7 +265,8 @@
         action: 'add',
         url: $('#url').value.trim(),
         note: text,
-        image: $('#image').value.trim() || null,
+        image: upload ? null : $('#image').value.trim() || null,
+        imageData: upload ? upload.data : undefined,
         tags: allTags(),
         date: $('#date').value,
       });
@@ -197,6 +279,7 @@
       $('#add-form').reset();
       $('#date').value = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
       selectedTags.clear();
+      clearUpload();
       lastFetched = '';
       msg($('#fetch-msg'), '');
       renderTagChips();
@@ -223,7 +306,11 @@
       : '<p class="hint">Nada pendiente. 👌</p>';
   }
   async function refreshPending() {
-    try { renderPending((await api('/api/save')).pending); } catch (e) {}
+    try {
+      const d = await api('/api/save');
+      renderPending(d.pending);
+      renderSites(d.sites || []);
+    } catch (e) {}
   }
   $('#pending').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -236,6 +323,78 @@
       setTimeout(refreshPending, 1200);
     } catch (err) {
       msg(out, err.message, 'error');
+    }
+  });
+
+  /* ---------- Cambiar la imagen de una web ya publicada ---------- */
+  let siteList = [];
+  let ciUpload = null;
+  const savedPreview = {}; // id → imagen recién guardada (hasta que Vercel redespliegue, la ruta img/… aún no existe)
+  const ciSite = () => siteList.find((s) => s.id === $('#ci-site').value);
+
+  function renderSites(list) {
+    siteList = list;
+    const keep = $('#ci-site').value;
+    const opt = (s) => `<option value="${esc(s.id)}">${esc(s.domain)} · ${esc(s.date)}</option>`;
+    const without = list.filter((s) => !s.image);
+    const withImg = list.filter((s) => s.image);
+    $('#ci-site').innerHTML =
+      (without.length ? `<optgroup label="Sin imagen (${without.length})">${without.map(opt).join('')}</optgroup>` : '') +
+      `<optgroup label="Con imagen (${withImg.length})">${withImg.map(opt).join('')}</optgroup>`;
+    if (keep && list.some((s) => s.id === keep)) $('#ci-site').value = keep;
+    $('#ci-count').textContent = without.length ? `${without.length} sin imagen` : 'todas tienen imagen 👌';
+    renderCi();
+  }
+
+  function renderCi() {
+    const s = ciSite();
+    if (!s) { $('#ci-preview').innerHTML = ''; return; }
+    const src = (ciUpload && ciUpload.data) || $('#ci-image').value.trim() || savedPreview[s.id] || s.image;
+    $('#ci-preview').innerHTML = thumbHTML(src, s.domain);
+    fallbackOnError($('#ci-preview'), s.domain);
+  }
+
+  const clearCiUpload = () => { ciUpload = null; msg($('#ci-image-msg'), ''); };
+  imagePicker({
+    button: $('#ci-pick'),
+    input: $('#ci-file'),
+    zone: $('#ci-form'),
+    onPick: (u) => {
+      ciUpload = u;
+      $('#ci-image').value = '';
+      showUploaded($('#ci-image-msg'), u, () => { clearCiUpload(); renderCi(); });
+      msg($('#ci-msg'), '');
+      renderCi();
+    },
+    onError: (t) => msg($('#ci-image-msg'), t, 'error'),
+  });
+  $('#ci-site').addEventListener('change', () => { clearCiUpload(); $('#ci-image').value = ''; msg($('#ci-msg'), ''); renderCi(); });
+  $('#ci-image').addEventListener('input', () => { if (ciUpload && $('#ci-image').value.trim()) clearCiUpload(); renderCi(); });
+
+  $('#ci-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const s = ciSite();
+    const url = $('#ci-image').value.trim();
+    if (!s) return;
+    if (!ciUpload && !url) { msg($('#ci-msg'), 'Sube una imagen o pega su URL.', 'error'); return; }
+    const btn = $('#ci-save');
+    btn.disabled = true;
+    msg($('#ci-msg'), 'Guardando…');
+    try {
+      const { entry } = await api('/api/save', ciUpload
+        ? { action: 'image', id: s.id, imageData: ciUpload.data }
+        : { action: 'image', id: s.id, image: url });
+      savedPreview[s.id] = ciUpload ? ciUpload.data : url;
+      s.image = entry.image;
+      clearCiUpload();
+      $('#ci-image').value = '';
+      renderSites(siteList);
+      msg($('#ci-msg'), `✓ Imagen de ${s.domain} guardada. Se verá en la web en un minuto.`, 'ok');
+    } catch (err) {
+      msg($('#ci-msg'), `No se ha guardado: ${err.message}`, 'error');
+      if (err.status === 401) showLogin(err.message);
+    } finally {
+      btn.disabled = false;
     }
   });
 

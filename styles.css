@@ -199,6 +199,11 @@ h1 { font-family: var(--fca-font-display); font-weight: 400; font-size: clamp(40
 .hint { font-size: 14px; color: var(--muted); max-width: 65ch; margin-bottom: 20px; }
 .admin-preview .label { margin-bottom: 12px; }
 .preview-card { max-width: 360px; }
+.hint.tight { margin: -10px 0 0; font-size: 13px; }
+.field select { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: transparent; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 10px 0; }
+.field select:focus-visible { outline: none; box-shadow: 0 1px 0 0 var(--ink); }
+.field select option { background: var(--bg); color: var(--ink); }
+.dragging .thumb { outline: 1px dashed var(--ink); outline-offset: 4px; }
 .pending-row { display: grid; grid-template-columns: 180px 1fr auto; gap: 16px; align-items: end; padding: 16px 0; border-top: 1px solid var(--hairline); }
 .pending-row:last-child { border-bottom: 1px solid var(--hairline); }
 .pending-row .msg { grid-column: 1 / -1; }

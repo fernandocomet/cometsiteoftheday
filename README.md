@@ -54,6 +54,8 @@ Para verla en local: `npx serve .` o `python3 -m http.server`, y abre `http://lo
 3. La web se guarda en `data/sites.json` (un commit en GitHub) y se abre X con el tuit escrito. Solo te queda darle a *Postear*.
 4. Cuando el tuit esté publicado, copia su enlace y pégalo en **Pendientes** para que la tarjeta tenga «Ver tuit».
 
+**Imágenes:** si la web no tiene imagen para compartir (`og:image`), pulsa **Subir imagen**, arrastra una captura al formulario o pégala con ⌘V. El panel la reduce (máx. 1600 px, JPEG), la guarda en `img/` del repo y en `sites.json` queda `"image": "img/…"`. En el bloque **Cambiar la imagen de una web** puedes hacer lo mismo con cualquier web ya publicada (salen primero las que no tienen imagen); la imagen anterior de `img/` se borra.
+
 El panel usa las funciones de `api/` y solo funciona en Vercel. Necesita estas variables en **Vercel → Settings → Environment Variables**:
 
 | Variable | Valor |
@@ -74,7 +76,7 @@ El panel usa las funciones de `api/` y solo funciona en Vercel. Necesita estas v
 
 ## Notas
 
-- Las miniaturas se cargan directamente desde los servidores de imágenes de X (`pbs.twimg.com`). Si alguna deja de funcionar, la tarjeta muestra el dominio en su lugar. Para no depender de X, puedes guardar capturas en `img/` y cambiar el campo `image`.
+- Las miniaturas se cargan directamente desde los servidores de imágenes de X (`pbs.twimg.com`) o desde `img/` si se subieron desde el panel. Si alguna deja de funcionar, la tarjeta muestra el dominio en su lugar y puedes cambiarla desde el panel.
 - Algunas webs antiguas (2014–2017) ya no existen o han cambiado. El enlace al tuit se mantiene siempre.
 
 © Fernando Comet

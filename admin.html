@@ -78,11 +78,15 @@
               <span>Imagen (se rellena sola al leer la web)</span>
               <input id="image" type="url" placeholder="https://…/og-image.jpg">
             </label>
+            <button class="btn ghost" id="image-pick" type="button">Subir imagen</button>
+            <input id="image-file" type="file" accept="image/*" hidden>
             <label class="field">
               <span>Fecha</span>
               <input id="date" type="date" required>
             </label>
           </div>
+          <p class="msg" id="image-msg" role="status"></p>
+          <p class="hint tight">Si la web no tiene imagen para compartir (og:image), sube una captura: elige un archivo, arrástralo a la vista previa o pégalo con ⌘V.</p>
 
           <div class="field">
             <span>Tecnologías</span>
@@ -99,6 +103,36 @@
             <button class="btn" id="publish" type="submit">Publicar y abrir X ↗</button>
           </div>
           <p class="msg" id="publish-msg" role="status"></p>
+        </form>
+      </div>
+
+      <!-- Cambiar la imagen de una web ya publicada -->
+      <div class="admin-block" id="change-image">
+        <p class="label">Imágenes</p>
+        <h2 class="admin-h2">Cambiar la imagen de una web</h2>
+        <p class="hint">Las webs sin imagen salen con el dominio sobre fondo negro. Elige una, sube una captura (archivo, arrastrar o ⌘V) o pega la URL de una imagen, y guarda.</p>
+        <form id="ci-form" class="admin-form">
+          <label class="field">
+            <span>Web <small id="ci-count"></small></span>
+            <select id="ci-site" required></select>
+          </label>
+          <div class="field-row">
+            <label class="field grow">
+              <span>URL de la imagen</span>
+              <input id="ci-image" type="url" placeholder="https://…/captura.jpg">
+            </label>
+            <button class="btn ghost" id="ci-pick" type="button">Subir imagen</button>
+            <input id="ci-file" type="file" accept="image/*" hidden>
+          </div>
+          <p class="msg" id="ci-image-msg" role="status"></p>
+          <div class="admin-preview">
+            <p class="label">Así quedará</p>
+            <div class="preview-card"><span class="thumb" id="ci-preview"></span></div>
+          </div>
+          <div class="field-row">
+            <button class="btn" id="ci-save" type="submit">Guardar imagen</button>
+          </div>
+          <p class="msg" id="ci-msg" role="status"></p>
         </form>
       </div>
 

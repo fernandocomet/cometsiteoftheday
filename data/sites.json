@@ -6,7 +6,7 @@
     "domain": "12ft.studio",
     "note": "Experiments, tools and prototypes from 12ft.studio is #CometSiteOfTheDay\nI specially like the softclock https://12ft.studio/lab/softclock",
     "tweet": null,
-    "image": null,
+    "image": "img/12ft.studio.jpg",
     "tags": [
       "Three.js",
       "GSAP"
@@ -19,7 +19,7 @@
     "domain": "thefinestpour.com",
     "note": "Srut | Bespoke Whisky Pourer for the Finest Pour is #CometSiteOfTheDay\nhttps://www.thefinestpour.com/",
     "tweet": null,
-    "image": null,
+    "image": "img/thefinestpour.com.jpg",
     "tags": [
       "Three.js",
       "GSAP"
@@ -69,7 +69,7 @@
     "domain": "human-md.ai",
     "note": "A working manifesto by Briana (Mazzio) May on what humans still bring to creative work now that AI models are very good and getting better every day. human-md.ai is #CometSiteOfTheDay",
     "tweet": "https://x.com/fernandocomet/status/2122685283800097204",
-    "image": "https://pbs.twimg.com/card_img/2122540768493707264/xn1isaB5?format=jpg&name=medium",
+    "image": "img/human-md.ai.jpg",
     "tags": []
   },
   {
@@ -79,7 +79,7 @@
     "domain": "amoscimpean.com",
     "note": "You can change not only dark/light mode at amoscimpean.com but also text settings. That made this site win #CometSiteOfTheDay Award",
     "tweet": "https://x.com/fernandocomet/status/2122320697028714657",
-    "image": "https://pbs.twimg.com/card_img/2122962294560755712/8pEv0ChI?format=png&name=medium",
+    "image": "img/amoscimpean.com.jpg",
     "tags": []
   },
   {
@@ -166,7 +166,7 @@
     "domain": "wantmymtv.org",
     "note": "I want my MTV Rewind is #CometSiteOfTheDay",
     "tweet": "https://x.com/fernandocomet/status/2013612965501485562",
-    "image": "https://pbs.twimg.com/card_img/2122587015011041280/pE4ci1BB?format=jpg&name=medium",
+    "image": "img/wantmymtv.org.jpg",
     "tags": []
   },
   {
@@ -189,7 +189,7 @@
     "domain": "sleep-well-creatives.com",
     "note": "Sleep Well Creatives is an interactive web experience designed to help people understand and improve the quality of their sleep through science-based insights, friendly design, and immersive visuals. This is Three.js + GSAP + Lenis sleep-well-creatives.com #CometSiteOfTheDay",
     "tweet": "https://x.com/fernandocomet/status/2007868057251979422",
-    "image": "https://pbs.twimg.com/card_img/2120867677153665024/NL0NnSpY?format=jpg&name=medium",
+    "image": "img/sleep-well-creatives.com.jpg",
     "tags": [
       "Three.js",
       "GSAP",
@@ -203,7 +203,7 @@
     "domain": "shopify.com",
     "note": "Shopify Editions | Winter '26: The Renaissance Edition They chose skateboards for the site. I like the Checkout Credit Card twist! #CometSiteOfTheDay",
     "tweet": "https://x.com/fernandocomet/status/1999032796824944748",
-    "image": "https://pbs.twimg.com/card_img/2121523571889487872/ggQaQgC8?format=jpg&name=medium",
+    "image": "img/shopify.com-editions-winter26.jpg",
     "tags": []
   },
   {
@@ -239,7 +239,7 @@
     "domain": "telescope.fyi",
     "note": "Telescope: Discover the best recommendations from the best curators, is #CometSiteOfTheDay It uses GSAP and Lenis, no NavBar, BottomBar instead becoming Footer, I like that! telescope.fyi",
     "tweet": "https://x.com/fernandocomet/status/1945122692660642236",
-    "image": null,
+    "image": "img/telescope.fyi.jpg",
     "tags": [
       "GSAP",
       "Lenis"
@@ -345,7 +345,7 @@
     "domain": "5-million-devs.netlify.com",
     "note": "#CometSiteOfTheDay Netlify has reached 5 million developers. I completed the journey in 10 minutes and 50 seconds. Can you beat that? 5-million-devs.netlify.com via @netlify",
     "tweet": "https://x.com/fernandocomet/status/1843941389706678596",
-    "image": null,
+    "image": "img/5-million-devs.netlify.com.jpg",
     "tags": []
   },
   {
@@ -369,7 +369,7 @@
     "domain": "motchiri.com",
     "note": "It is not Three.js that I like more in this site, it is the music motchiri.com/collection/hello-world is #CometSiteOfTheDay",
     "tweet": "https://x.com/fernandocomet/status/1743701847406268488",
-    "image": "https://pbs.twimg.com/card_img/2122368216047472640/IZtw5SOc?format=jpg&name=medium",
+    "image": "img/motchiri.com.jpg",
     "tags": [
       "Three.js"
     ]

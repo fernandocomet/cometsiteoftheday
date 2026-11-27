@@ -112,4 +112,39 @@ function tweetId(u) {
   return m ? m[1] : null;
 }
 
-module.exports = { send, checkAuth, readBody, readSites, updateSites, detectTags, normalizeUrl, domainOf, tweetId };
+// Imágenes subidas desde el panel: se guardan en img/ del repo y en sites.json queda la ruta relativa ("img/…").
+// El panel ya las reduce (máx. 1600 px, JPEG) antes de enviarlas; aquí solo se valida.
+const IMG_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+const MAX_IMG_BYTES = 3 * 1024 * 1024;
+const LOCAL_IMG = /^img\/[a-z0-9._-]+\.(?:jpg|png|webp)$/;
+
+async function saveImage(dataUrl, domain) {
+  const m = String(dataUrl || '').match(/^data:(image\/[a-z]+);base64,([A-Za-z0-9+/=]+)$/);
+  if (!m || !IMG_TYPES[m[1]]) throw Object.assign(new Error('La imagen tiene que ser JPG, PNG o WebP.'), { status: 400 });
+  const bytes = Buffer.from(m[2], 'base64');
+  if (bytes.length > MAX_IMG_BYTES) throw Object.assign(new Error('La imagen pesa demasiado (máx. 3 MB).'), { status: 400 });
+  const slug = String(domain || 'web').toLowerCase().replace(/[^a-z0-9.-]+/g, '-').slice(0, 60);
+  const path = `img/${slug}-${Date.now().toString(36)}.${IMG_TYPES[m[1]]}`;
+  await gh(`contents/${path}`, { method: 'PUT', body: JSON.stringify({ message: `Imagen de ${domain}`, content: m[2], branch: BRANCH }) });
+  return path;
+}
+
+// Borra una imagen de img/ que ya no usa nadie (si falla, no pasa nada: solo queda un archivo huérfano).
+async function deleteImage(path) {
+  if (!LOCAL_IMG.test(path || '')) return;
+  try {
+    const f = await gh(`contents/${path}?ref=${encodeURIComponent(BRANCH)}`);
+    await gh(`contents/${path}`, { method: 'DELETE', body: JSON.stringify({ message: `Quita ${path}`, sha: f.sha, branch: BRANCH }) });
+  } catch (e) { /* ignorado */ }
+}
+
+// Devuelve lo que se guarda en el campo `image`: una imagen subida (imageData), una URL o una ruta img/… existente.
+async function resolveImage(body, domain) {
+  if (body.imageData) return saveImage(body.imageData, domain);
+  const img = String(body.image || '').trim();
+  if (!img) return null;
+  if (LOCAL_IMG.test(img)) return img;
+  try { return normalizeUrl(img).href; } catch (e) { throw Object.assign(new Error('La URL de la imagen no es válida.'), { status: 400 }); }
+}
+
+module.exports = { send, checkAuth, readBody, readSites, updateSites, detectTags, normalizeUrl, domainOf, tweetId, resolveImage, deleteImage };
